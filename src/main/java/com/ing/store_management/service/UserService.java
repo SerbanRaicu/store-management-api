@@ -1,0 +1,129 @@
+package com.ing.store_management.service;
+
+import com.ing.store_management.dto.UserDto;
+import com.ing.store_management.exception.DuplicateUserException;
+import com.ing.store_management.exception.UserNotFoundException;
+import com.ing.store_management.model.User;
+import com.ing.store_management.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserService {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserDto createUser(UserDto userDto, String rawPassword) {
+        if (userRepository.existsByUsername(userDto.getUsername())) {
+            throw new DuplicateUserException("Username '" + userDto.getUsername() + "' already exists");
+        }
+
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new DuplicateUserException("Email '" + userDto.getEmail() + "' already exists");
+        }
+
+        User user = mapToEntity(userDto);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        User savedUser = userRepository.save(user);
+
+        return mapToDto(savedUser);
+    }
+
+    public UserDto findUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+
+        return mapToDto(user);
+    }
+
+    public UserDto findUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+
+        return mapToDto(user);
+    }
+
+    public UserDto findUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        return mapToDto(user);
+    }
+
+    public List<UserDto> findUsersByRole(User.Role role) {
+        List<User> users = userRepository.findByRole(role);
+
+        return users.stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    public List<UserDto> findAllActiveUsers() {
+        List<User> users = userRepository.findByEnabledTrue();
+
+        return users.stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    public UserDto updateUserRole(Long userId, User.Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        user.setRole(newRole);
+        User updatedUser = userRepository.save(user);
+
+        return mapToDto(updatedUser);
+    }
+
+    public UserDto enableUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        user.setEnabled(true);
+        User updatedUser = userRepository.save(user);
+
+        return mapToDto(updatedUser);
+    }
+
+    public UserDto disableUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+
+        user.setEnabled(false);
+        User updatedUser = userRepository.save(user);
+
+        return mapToDto(updatedUser);
+    }
+
+    private UserDto mapToDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .enabled(user.getEnabled())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
+    private User mapToEntity(UserDto userDto) {
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setRole(userDto.getRole());
+        user.setEnabled(userDto.getEnabled() != null ? userDto.getEnabled() : true);
+        return user;
+    }
+}
