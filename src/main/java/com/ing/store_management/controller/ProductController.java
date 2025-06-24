@@ -32,6 +32,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
+        log.info("REST request to get product by ID: {}", id);
         ProductDto product = productService.findProductById(id);
         return ResponseEntity.ok(product);
     }
@@ -42,6 +43,9 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
+        log.info("REST request to get all products - page: {}, size: {}, sortBy: {}, sortDir: {}",
+                page, size, sortBy, sortDir);
+
         Sort sort = sortDir.equalsIgnoreCase("desc") ?
                 Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
 
@@ -53,18 +57,21 @@ public class ProductController {
 
     @GetMapping("/search")
     public ResponseEntity<List<ProductDto>> searchProducts(@RequestParam String name) {
+        log.info("REST request to search products by name: {}", name);
         List<ProductDto> products = productService.findProductsByName(name);
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/category/{category}")
     public ResponseEntity<List<ProductDto>> getProductsByCategory(@PathVariable String category) {
+        log.info("REST request to get products by category: {}", category);
         List<ProductDto> products = productService.findProductsByCategory(category);
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/available")
     public ResponseEntity<List<ProductDto>> getAvailableProducts() {
+        log.info("REST request to get available products");
         List<ProductDto> products = productService.findAvailableProducts();
         return ResponseEntity.ok(products);
     }
@@ -73,12 +80,14 @@ public class ProductController {
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductDto productDto) {
+        log.info("REST request to update product with ID: {}", id);
         ProductDto updatedProduct = productService.updateProduct(id, productDto);
         return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
+        log.info("REST request to delete product with ID: {}", id);
         productService.deleteProduct(id);
         return ResponseEntity.ok(Map.of("message", "Product deleted successfully"));
     }
