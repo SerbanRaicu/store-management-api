@@ -1,4 +1,4 @@
-package controller;
+package com.ing.store_management.controller;
 
 import com.ing.store_management.dto.ProductDto;
 import com.ing.store_management.service.ProductService;
@@ -24,8 +24,9 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDTO) {
-        ProductDto createdProduct = productService.createProduct(productDTO);
+    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDto) {
+        log.info("REST request to create product: {}", productDto.getName());
+        ProductDto createdProduct = productService.createProduct(productDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
@@ -71,8 +72,8 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable Long id,
-            @Valid @RequestBody ProductDto productDTO) {
-        ProductDto updatedProduct = productService.updateProduct(id, productDTO);
+            @Valid @RequestBody ProductDto productDto) {
+        ProductDto updatedProduct = productService.updateProduct(id, productDto);
         return ResponseEntity.ok(updatedProduct);
     }
 
