@@ -1,7 +1,9 @@
 package com.ing.store_management.exception;
 
-public class DuplicateUserException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class DuplicateUserException extends BusinessException {
     public DuplicateUserException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT, "DUPLICATE_USER");
     }
 }
