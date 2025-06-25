@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDto) {
         log.info("REST request to create product: {}", productDto.getName());
         ProductDto createdProduct = productService.createProduct(productDto);
@@ -31,6 +33,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
         log.info("REST request to get product by ID: {}", id);
         ProductDto product = productService.findProductById(id);
@@ -38,6 +41,7 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<Page<ProductDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -56,6 +60,7 @@ public class ProductController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<List<ProductDto>> searchProducts(@RequestParam String name) {
         log.info("REST request to search products by name: {}", name);
         List<ProductDto> products = productService.findProductsByName(name);
@@ -63,6 +68,7 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<List<ProductDto>> getProductsByCategory(@PathVariable String category) {
         log.info("REST request to get products by category: {}", category);
         List<ProductDto> products = productService.findProductsByCategory(category);
@@ -70,6 +76,7 @@ public class ProductController {
     }
 
     @GetMapping("/available")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('EMPLOYEE')")
     public ResponseEntity<List<ProductDto>> getAvailableProducts() {
         log.info("REST request to get available products");
         List<ProductDto> products = productService.findAvailableProducts();
@@ -77,6 +84,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable Long id,
             @Valid @RequestBody ProductDto productDto) {
@@ -86,6 +94,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteProduct(@PathVariable Long id) {
         log.info("REST request to delete product with ID: {}", id);
         productService.deleteProduct(id);
